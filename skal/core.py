@@ -33,7 +33,8 @@ class SkalApp(object):
                  version=None,
                  args=None,
                  command_modules=[],
-                 subcommand_modules=[]):
+                 subcommand_modules=[],
+                 command_wrapper=None):
         """Creates the argparser using metadata from decorators
 
         Keyword arguments:
@@ -101,6 +102,8 @@ class SkalApp(object):
                 _add_commands_from_module(
                     module, module_parser, module_subparser)
 
+        self.command_wrapper = command_wrapper
+
         # Package, as commands
 
         # Package, as subcommands
@@ -120,7 +123,10 @@ class SkalApp(object):
         args = vars(raw_args)
         cmd = args.pop('cmd')
         if hasattr(cmd, '__call__'):
-            cmd(**args)
+            if self.command_wrapper:
+                self.command_wrapper(cmd, args)
+            else:
+                cmd(**args)
 
 
 def command(func_or_args=None):
